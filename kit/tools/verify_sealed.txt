@@ -1,0 +1,8 @@
+# Path patterns that tools/verify.py must NEVER send off-box. One Python regex per line; # = comment.
+# Matched against forward-slash-normalised paths. Add a line the day a holdout is sealed.
+\.env$
+\.env\.
+data_local/holdout/
+data_local/raw/
+\.pem$
+id_rsa

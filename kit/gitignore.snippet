@@ -1,0 +1,15 @@
+# ---- claude-harness-kit additions (append to your .gitignore) ----
+# Secrets / local env (the pre-commit hook also blocks these)
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.pfx
+
+# Heavy data lives in data_local/ or DATA_ROOT, never in git
+data_local/
+experiments/*/outputs/
+
+# Per-machine Claude Code settings (never share)
+.claude/settings.local.json

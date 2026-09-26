@@ -1,0 +1,28 @@
+# Credentials and secrets
+.env
+*.env
+.env.*
+*.pem
+
+# Heavy data — reference by path, don't read
+data_local/**
+experiments/*/outputs/**
+*.parquet
+*.npy
+*.npz
+*.pt
+*.pth
+*.safetensors
+*.faiss
+*.pkl
+*.csv.gz
+
+# Environments and caches
+.venv/**
+**/__pycache__/**
+.pytest_cache/**
+.ruff_cache/**
+
+# Logs
+logs/**
+*.log

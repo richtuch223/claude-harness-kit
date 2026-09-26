@@ -1,0 +1,30 @@
+# ══════════════════════════════════════════════════════════════════════════════════════════════
+# THE NUMBERS REGISTRY — the single home for every quotable figure in this project.
+# ══════════════════════════════════════════════════════════════════════════════════════════════
+# WHY: a number with N homes can be wrong in N-1 of them, and corrections do not propagate. The
+# source program found 587 numeric claims spread across up to 6 homes each, and every error was
+# optimistic. This file gives every figure exactly ONE home.
+#
+# RULES
+#   1. A doc may cite `{{id}}`. A doc must NOT restate a value this file owns.
+#   2. `status: retracted` + `do_not_quote: true` means NEVER quote it, not even with a caveat.
+#      Retracted figures are KEPT so they cannot silently return.
+#   3. `population` is part of a figure's identity. The same metric on a different split or a
+#      different population is a DIFFERENT FACT, never one fact with two values.
+#   4. `needs_adjudication: true` = two sources disagree and nobody has ruled. Do not pick one.
+#   5. Every entry names its producer script; a figure whose producer is not git-tracked is not durable.
+#
+# The pre-commit hook rejects a commit if this file does not parse or an id is duplicated.
+# ══════════════════════════════════════════════════════════════════════════════════════════════
+
+facts:
+
+  # Example entry — delete once you have a real one.
+  - id: example.baseline.metric
+    value: 0.0
+    ci95: [0.0, 0.0]
+    unit: <metric name>
+    population: "<dataset · filters · split cutoff · n>"
+    status: example           # banked | retracted | example
+    producer: "experiments/000_baselines/run.py"
+    note: "What this number is the bar for."

@@ -1,0 +1,14 @@
+# ops/figures.yaml -- DERIVED numeric index for the figure hooks. Your source docs stay authoritative.
+# Each entry pins a VERBATIM source_quote that must still appear in source_file; if it doesn't, the lookup
+# refuses to emit the number. retracted_values are strings that must never be stated as live claims.
+example_earnings:
+  aliases:
+  - strategy x
+  - the thin-coin strategy
+  value: gross ~$0.4k/yr median; <=~$1k/yr net at the deployed cap
+  source_file: docs/DECISIONS.md
+  source_quote: "~$0.4k/yr median"
+  status: LIVE
+  retracted_values:
+  - $22k/yr
+  retraction_note: that was annual notional THROUGHPUT, not earnings

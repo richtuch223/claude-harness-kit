@@ -1,0 +1,9 @@
+#!/bin/sh
+# Pre-commit check. Logic lives in pre_commit_check.py beside this file.
+# Enable per clone: git config core.hooksPath ops/githooks
+# Prefer the repo venv (it has the package installed editable and the data deps); fall back to PATH python.
+ROOT="$(git rev-parse --show-toplevel)"
+PY="python"
+[ -x "$ROOT/.venv/Scripts/python.exe" ] && PY="$ROOT/.venv/Scripts/python.exe"
+[ -x "$ROOT/.venv/bin/python" ] && PY="$ROOT/.venv/bin/python"
+PYTHONUTF8=1 "$PY" "$ROOT/ops/githooks/pre_commit_check.py"

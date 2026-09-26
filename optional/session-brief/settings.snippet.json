@@ -1,0 +1,7 @@
+{
+  "hooks": {
+    "SessionStart": [
+      { "hooks": [ { "type": "command", "command": "python \"$CLAUDE_PROJECT_DIR\"/tools/hooks/session_brief.py", "timeout": 20 } ] }
+    ]
+  }
+}
