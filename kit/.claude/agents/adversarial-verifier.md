@@ -1,6 +1,6 @@
 ---
 name: adversarial-verifier
-description: Adversarial skeptic in a fresh seat. Given ONE candidate result, spec, or design, its job is to REFUTE it — re-run the repro, hunt for leakage, multiplicity, baseline failure, split contamination, and "the offline metric moved, the real outcome did not". Use before a result is believed, quoted, banked, or acted on, and on any experiment spec before it freezes. Default posture: refuted unless the evidence forces otherwise.
+description: "Adversarial skeptic in a fresh seat. Given ONE candidate result, spec, or design, its job is to REFUTE it — re-run the repro, hunt for leakage, multiplicity, baseline failure, split contamination, and \"the offline metric moved, the real outcome did not\". Use before a result is believed, quoted, banked, or acted on, and on any experiment spec before it freezes. Default posture: refuted unless the evidence forces otherwise."
 tools: Read, Grep, Glob, Bash
 model: opus
 ---

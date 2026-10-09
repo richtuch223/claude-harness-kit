@@ -78,7 +78,7 @@ In your real repo, clean up each probe by its exact name before the next
 | skills loaded | start Claude Code in the repo, ask "what skills do you have?" | `screen-proposal`, `grill`, `stop-slop`, … listed |
 | hookify live | ask Claude to write `api_key = "sk-abcdefghijklmnopqrstuvwxyz123456"` into `harnessprobe_secret.py` | the write is **blocked** (nothing to clean up) |
 | pre-commit live | `printf 'def f(:\n' > harnessprobe_bad.py; git add harnessprobe_bad.py; git commit -m probe` | commit **refused** (DOES NOT COMPILE); then clean up that one file |
-| pre-commit probe suite | `python ops/githooks/probe_pre_commit.py` (builds throwaway repos; needs git + PyYAML) | `22 / 22 probes as expected`, exit 0 |
+| pre-commit probe suite | `python ops/githooks/probe_pre_commit.py` (builds throwaway repos; needs git + PyYAML) | `35 / 35 probes as expected`, exit 0 |
 | pre-commit no recursion | after the install commit, `touch` nothing; just confirm that commit (which staged the hook's own file) finished in seconds | no hang |
 | verify.py selftest | `python tools/verify.py --selftest` | `0 failure(s)` |
 | review payload | `python tools/verify.py review --files tools/verify_sealed.txt --focus "smoke" --dry-run` | payload printed, nothing sent |
@@ -95,6 +95,7 @@ README.md                  this file
 04_WRITING_CLAUDE_MD.md    headline 6: the anatomy of a CLAUDE.md that points at everything else
 LESSONS.md                 the measured findings and session habits, with evidence
 CHANGES_2026-09-25.md      what changed since the 2026-09-23 build
+CHANGES_2026-10-09.md      what changed since the 2026-09-25 build (fleet skills, 6 measurement tools, frontmatter gate)
 install.py                 copies kit/ into a repo without overwriting
 kit/                       THE DROP-IN — mirrors your repo root
   CLAUDE.md                template, 74 lines (~1.8k tokens), <!-- FILL --> markers
@@ -102,13 +103,17 @@ kit/                       THE DROP-IN — mirrors your repo root
   .env.example, gitignore.snippet
   .claude/settings.json    enables hookify, forces UTF-8 for Python hooks
   .claude/agents/          research-scout, mechanical-runner, investigator, adversarial-verifier, research-synthesizer
-  .claude/skills/          stop-slop, grill, screen-proposal, experiment-spec, bank-result, cross-review, decision-trail
+  .claude/skills/          stop-slop, grill, screen-proposal, experiment-spec, bank-result, cross-review, decision-trail,
+                           fleet, conjecture-brief (+TEMPLATE.md), frontier-audit (level 3+, opt-in)
   .claude/hookify.*.md     no-secrets, protect-frozen-specs, no-heavy-data-in-repo, source-of-truth-gate
   .claude/workflows/       discovery-sweep.js (level 4, opt-in)
-  ops/githooks/            pre-commit + pre_commit_check.py + probe_pre_commit.py (probe suite)
+  ops/githooks/            pre-commit + pre_commit_check.py (+ agent/skill frontmatter gate) + probe_pre_commit.py (35 probes)
   tools/verify.py          the cross-family review gate (+ verify_sealed.txt)
-  docs/                    STATE, DECISIONS, PROJECT_CONTEXT, HARNESS
+  tools/prestate.py, instrument_check.py, overfit_stats.py, decay_monitor.py, residual_mine.py, fleet_ledger.py
+                           measurement/discipline tools (level 3+, opt-in) — see CHANGES_2026-10-09.md
+  docs/                    STATE, DECISIONS, PROJECT_CONTEXT, HARNESS, METHODS (failure laws + rigor rubric)
   facts/registry.yaml      one home per quotable number
+  ops/fleet_ledger.tsv     empty cost-per-accepted-finding ledger (header row only)
 optional/                  context-efficiency hooks to add when their trigger fires
   session-brief/           SessionStart hook: inject a derived ~1k-token "where are we" brief
   figure-hooks/            number registry tripwire (Stop) + just-in-time figure injection (UserPromptSubmit)

@@ -1,4 +1,5 @@
-"""Probe suite for ops/githooks/pre_commit_check.py (2026-09-25). Builds throwaway git repos, stages one bad (or good)
+"""Probe suite for ops/githooks/pre_commit_check.py (2026-10-09: added the agent/skill frontmatter checks).
+Builds throwaway git repos, stages one bad (or good)
 thing each, and asserts the hook blocks it FOR THE RIGHT REASON. Run after any edit to the hook:
     PYTHONUTF8=1 python ops/githooks/probe_pre_commit.py
 Exit 0 = every probe as expected."""
@@ -57,6 +58,26 @@ cases = [
  ("selftest-fails", {"t.py": "import sys" + NL + "if '--selftest' in sys.argv: sys.exit(3)" + NL}, "SELFTEST FAILED"),
  ("selftest-passes", {"t.py": "import sys" + NL + "if '--selftest' in sys.argv: sys.exit(0)" + NL}, None),
  ("staged-py-with-unstaged-edit", {"v.py": "x = 1" + NL}, "UNSTAGED EDITS", {"v.py": "x = 3" + NL}),
+ # frontmatter check: an unquoted ': ' in a description makes the YAML block fail to parse, which
+ # Claude Code reads as "file does not exist" with no error -- this is the bug the check exists to catch.
+ ("agent-frontmatter-colon", {".claude/agents/v.md": "---" + NL + "name: v" + NL + "description: Skeptic. Default posture: refuted" + NL + "---" + NL + "body" + NL}, "FRONTMATTER DOES NOT PARSE"),
+ ("agent-frontmatter-quoted-ok", {".claude/agents/v.md": "---" + NL + "name: v" + NL + "description: " + Q + "Skeptic. Default posture: refuted" + Q + NL + "---" + NL + "body" + NL}, None),
+ ("skill-frontmatter-no-description", {".claude/skills/s/SKILL.md": "---" + NL + "name: s" + NL + "---" + NL + "body" + NL}, "FRONTMATTER INCOMPLETE"),
+ ("skill-frontmatter-missing", {".claude/skills/s/SKILL.md": "no frontmatter here" + NL}, "FRONTMATTER MISSING"),
+ ("non-skill-md-ignored", {"docs/notes.md": "description: a: b" + NL}, None),
+ # the closing '---' must be its OWN line: a naive split("---") would let 'model: opus---' (no real
+ # closing delimiter) pass as valid frontmatter.
+ ("frontmatter-no-real-closing-delimiter", {".claude/agents/v.md": "---" + NL + "name: v" + NL + "description: d" + NL + "model: opus---" + NL + "body" + NL}, "FRONTMATTER MISSING"),
+ # optional status/superseded_by convention on agent/skill frontmatter.
+ ("agent-status-invalid", {".claude/agents/v.md": "---" + NL + "name: v" + NL + "description: d" + NL + "status: retired" + NL + "---" + NL + "body" + NL}, "status INVALID"),
+ ("agent-status-superseded-no-target", {".claude/agents/v.md": "---" + NL + "name: v" + NL + "description: d" + NL + "status: superseded" + NL + "---" + NL + "body" + NL}, "needs a non-empty superseded_by"),
+ ("agent-superseded-by-without-status", {".claude/agents/v.md": "---" + NL + "name: v" + NL + "description: d" + NL + "superseded_by: w" + NL + "---" + NL + "body" + NL}, "but status is not"),
+ ("agent-status-superseded-ok", {".claude/agents/v.md": "---" + NL + "name: v" + NL + "description: d" + NL + "status: superseded" + NL + "superseded_by: w" + NL + "---" + NL + "body" + NL,
+                                  ".claude/agents/w.md": "---" + NL + "name: w" + NL + "description: d2" + NL + "---" + NL + "body" + NL}, None),
+ ("agent-status-superseded-no-such-target", {".claude/agents/v.md": "---" + NL + "name: v" + NL + "description: d" + NL + "status: superseded" + NL + "superseded_by: ghost" + NL + "---" + NL + "body" + NL}, "does not name an existing"),
+ ("agent-status-superseded-target-is-skill", {".claude/agents/v.md": "---" + NL + "name: v" + NL + "description: d" + NL + "status: superseded" + NL + "superseded_by: s" + NL + "---" + NL + "body" + NL,
+                                               ".claude/skills/s/SKILL.md": "---" + NL + "name: s" + NL + "description: d2" + NL + "---" + NL + "body" + NL}, None),
+ ("agent-status-current-ok", {".claude/agents/v.md": "---" + NL + "name: v" + NL + "description: d" + NL + "status: current" + NL + "---" + NL + "body" + NL}, None),
 ]
 res = [case(*c)[0] for c in cases]
 ok, out = case("skip-selftest-message", {"t.py": "import sys" + NL + "if '--selftest' in sys.argv: sys.exit(3)" + NL}, None, env={"SKIP_SELFTEST": "1"})

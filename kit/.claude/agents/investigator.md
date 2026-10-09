@@ -1,6 +1,6 @@
 ---
 name: investigator
-description: Deep investigator for ONE promoted question — a candidate model, feature, heuristic, data source, or evaluation design. Resolves it rigorously against a frozen spec: proper split, mandatory baselines, CI at the right unit, leakage audit, and a single-command repro. Use after research-scout has promoted a lead, or when the main loop wants a judgment-bearing task off its own context.
+description: "Deep investigator for ONE promoted question — a candidate model, feature, heuristic, data source, or evaluation design. Resolves it rigorously against a frozen spec: proper split, mandatory baselines, CI at the right unit, leakage audit, and a single-command repro. Use after research-scout has promoted a lead, or when the main loop wants a judgment-bearing task off its own context."
 tools: Read, Grep, Glob, Bash, Write, Edit
 model: opus
 ---

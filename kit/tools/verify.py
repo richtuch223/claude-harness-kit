@@ -58,8 +58,11 @@ PROVIDERS = {
     "codex-cli":  ("", "", ""),
 }
 CLI_PROVIDERS = ("gemini-cli", "codex-cli")
-# Codex aliases carried over from the source program; confirm against `/model` inside `codex` after login.
-CODEX_TIERS = {"astra": "gpt-6-astra", "sol": "gpt-5.6-sol", "terra": "gpt-5.6-terra", "luna": "gpt-5.6-luna"}
+# Codex CLI model ids drift with each release; confirm the real current ids with `/model` inside `codex`
+# after login, and update this dict to match (the values below are illustrative placeholders, not real
+# model ids). Alias names are kept consistent with the OpenRouter TIERS dict below so the same `-m`
+# word works across providers.
+CODEX_TIERS = {"soul": "<confirm via /model>", "terra": "<confirm via /model>", "luna": "<confirm via /model>"}
 # Flags that would hand a different-family model write access. Never passed; refused if they arrive via -m.
 CODEX_FORBIDDEN = ("danger-full-access", "--dangerously-bypass-approvals-and-sandbox", "workspace-write")
 # Tool switches verified on codex-cli 0.155.1 with a canary file outside the cwd: `-s read-only` alone let the

@@ -21,7 +21,7 @@ update an existing file instead of adding a near-duplicate; delete memories that
 lives in the home directory and does not travel with a clone, so the source repo keeps a repo-tracked
 export (`ops/memory_export/`).
 
-The five files here are the incidents that cost the most, each generalizable:
+The files here are the incidents that cost the most, each generalizable:
 
 | file | the lesson |
 |---|---|
@@ -30,3 +30,8 @@ The five files here are the incidents that cost the most, each generalizable:
 | `api-page-cap-drops-the-losses.md` | a 1,000-row page cap selected the sample and faked an edge |
 | `bash-heredoc-backslash-n-gotcha.md` | write code with the editor tools, not heredocs |
 | `harness-low-memory-guard-kills-tracked-jobs.md` | long jobs run detached, resumable, with a heartbeat |
+| `secret-fixture-must-build-at-runtime.md` | a secret-scanner test fixture must build the fake key at runtime, or it looks like a real leak |
+| `agent-frontmatter-unquoted-colon.md` | an unquoted `: ` in agent/skill frontmatter is invalid YAML and the file is silently dropped |
+| `current-identifier-survivorship-trap.md` | never resolve a historical population through a CURRENT identifier list — it drops the dead |
+| `free-data-apis-wall-history.md` | free APIs usually serve live data, not deep history; check lookback before designing a historical test |
+| `in-sample-mean-normalization-hides-the-contrast.md` | a statistic measured against its own in-sample mean carries all of that mean's shrinkage; pre-state the real contrast |

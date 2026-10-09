@@ -11,6 +11,7 @@ Read before changing the harness, so the same dead ends are not re-walked. Appen
 | a **delegation boundary** | a **subagent** (`.claude/agents/*.md`, model pin in frontmatter) |
 | always-on project guidance | `CLAUDE.md`, kept under ~150 lines, paid every session |
 | durable thesis / principles | `docs/PROJECT_CONTEXT.md` |
+| reusable failure laws, validation methods, estimator traps | `docs/METHODS.md` |
 | **state** | exactly three files (§3) |
 
 If a rule must hold, give it a hook: rules written only in prose were ignored in the source program.
@@ -20,13 +21,21 @@ If a rule must hold, give it a hook: rules written only in prose were ignored in
 - **Agents:** `research-scout` (sonnet), `mechanical-runner` (sonnet), `investigator` (opus),
   `adversarial-verifier` (opus, fresh seat), `research-synthesizer` (sonnet).
 - **Skills:** `stop-slop`, `grill`, `screen-proposal`, `experiment-spec`, `bank-result`, `cross-review`,
-  `decision-trail`.
+  `decision-trail`, `fleet` (level 3+: multi-agent fan-out contract), `conjecture-brief` (level 3+: the
+  shared research brief that chains fleets), `frontier-audit` (level 3+: periodic closure re-read).
 - **Guards** (need the hookify plugin): `no-secrets`, `protect-frozen-specs`, `no-heavy-data-in-repo`
   (block); `source-of-truth-gate` (warn).
 - **Pre-commit** (`git config core.hooksPath ops/githooks`, per clone): staged `.py` must compile · a
-  staged script's `--selftest` must pass · `facts/registry.yaml` must parse with unique ids · no secret in
+  staged script's `--selftest` must pass · `facts/registry.yaml` must parse with unique ids · a staged
+  agent/skill file's frontmatter must parse as YAML with name+description · no secret in
   the diff, a staged key file, or a binary blob · no staged file over 5 MB (`PRECOMMIT_MAX_MB`) · no unstaged edits on a checked file · any git failure blocks.
-- **Tools:** `tools/verify.py` (cross-family review; sealed paths in `tools/verify_sealed.txt`).
+- **Tools:** `tools/verify.py` (cross-family review; sealed paths in `tools/verify_sealed.txt`) ·
+  `tools/prestate.py` (content-addressed pre-registration/freeze log) ·
+  `tools/instrument_check.py` (can-this-field-see-the-quantity gate) ·
+  `tools/overfit_stats.py` (deflated Sharpe ratio, probability of backtest overfitting) ·
+  `tools/decay_monitor.py` (CUSUM + Wald SPRT sequential monitor for a live/forward line) ·
+  `tools/residual_mine.py` (abduction-seed residual miner, outcome columns firewalled) ·
+  `tools/fleet_ledger.py` (cost-per-accepted-finding ledger for agent fan-outs; `ops/fleet_ledger.tsv`).
 - **Workflow:** `.claude/workflows/discovery-sweep.js` (opt-in fan-out; costs nothing until run).
 
 Guard status: <!-- record the date each guard was PROBED live, e.g. "no-secrets: blocked a test write 2026-10-01" -->

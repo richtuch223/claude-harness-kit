@@ -12,7 +12,11 @@ Blocks a commit on:
   5. a staged .py or registry that ALSO has unstaged edits (the hook would otherwise test content that is not
      what gets committed) -- stage or stash the rest first;
   6. any git command failing (the hook never reports "ok" on content it could not read);
-  7. a staged file over PRECOMMIT_MAX_MB (default 5 MB): heavy data never enters git.
+  7. a staged file over PRECOMMIT_MAX_MB (default 5 MB): heavy data never enters git;
+  8. a staged agent/skill file (`.claude/agents/*.md`, `.claude/skills/*/SKILL.md`) whose frontmatter is
+     missing, does not parse as YAML, or is missing name/description -- Claude Code drops such a file
+     SILENTLY (an unquoted `: ` in a description is valid-looking text but invalid YAML), so a reviewer
+     seat defined this way can go dark for a long time with no error anywhere.
 
 Installed per clone with `git config core.hooksPath ops/githooks`. Never bypass with --no-verify: fix the cause.
 SKIP_SELFTEST=1 skips step 2 only (for a selftest that is known-slow); everything else always runs.
@@ -81,6 +85,17 @@ def staged_paths():
 
 def staged_size(path):
     return int(git("cat-file", "-s", f":{path}").strip())
+
+
+def staged_file_exists(path):
+    """Does `path` exist in the STAGED index (what will actually be committed), not the working tree?
+    `git cat-file -e :path` exits 0 if the blob is in the index, nonzero otherwise -- this is the check
+    for "does the commit this hook is gating actually contain this file", which an os.path.isfile() on
+    the working tree gets wrong both ways: an untracked file on disk satisfies isfile() without being
+    committed, and a file staged-but-not-yet-synced to disk (rare, but index != worktree is the whole
+    reason git has an index) would wrongly fail it."""
+    r = subprocess.run(["git", "cat-file", "-e", f":{path}"], capture_output=True, timeout=GIT_TIMEOUT_S)
+    return r.returncode == 0
 
 
 def export_index():
@@ -238,6 +253,73 @@ def main():
                 dupes = sorted({i for i in ids if ids.count(i) > 1})
                 if dupes:
                     problems.append(f"DUPLICATE REGISTRY IDS (one home per figure): {', '.join(dupes[:8])}")
+
+    # 8. Agent / skill frontmatter must be valid YAML with name + description. An unquoted ': ' in a
+    #    description is valid-looking text but invalid YAML, and Claude Code drops such a file SILENTLY --
+    #    a reviewer/gate seat defined this way can be dark for a long time with no error anywhere.
+    fm_paths = [p for p in staged if p.endswith(".md") and (re.match(r"^\.claude/agents/[^/]+\.md$", p)
+                                                           or re.match(r"^\.claude/skills/[^/]+/SKILL\.md$", p))]
+    if fm_paths:
+        try:
+            import yaml as _yaml
+        except ImportError:
+            _yaml = None
+            problems.append("pyyaml missing - cannot check agent/skill frontmatter (pip install pyyaml)")
+        for path in fm_paths if _yaml else []:
+            try:
+                text = git("show", f":{path}", binary=True).decode("utf-8")
+            except GitFailed as exc:
+                problems.append(f"GIT FAILED reading staged {path}: {exc}")
+                continue
+            # Line-anchored: the block is delimited by lines that are exactly '---'. A plain split("---")
+            # would let something like 'model: opus---' (no real closing delimiter) pass as valid.
+            m_fm = re.match(r"\A---[ \t]*\r?\n(.*?)\r?\n---[ \t]*(\r?\n|\Z)", text, re.S)
+            if not m_fm:
+                problems.append(f"FRONTMATTER MISSING: {path} must start with a --- YAML block closed by a line "
+                                f"that is exactly ---")
+                continue
+            try:
+                fm = _yaml.safe_load(m_fm.group(1))
+            except Exception as exc:  # noqa: BLE001
+                problems.append(f"FRONTMATTER DOES NOT PARSE (Claude Code would silently drop it): {path}\n      "
+                                f"{str(exc).splitlines()[0]}  -- quote a description that contains ': '")
+                continue
+            if not isinstance(fm, dict) or not fm.get("name") or not fm.get("description"):
+                problems.append(f"FRONTMATTER INCOMPLETE: {path} needs name and description")
+                continue
+            # Optional status/superseded_by convention: a doc can mark itself replaced by a named
+            # successor. Presence-vs-value matters: `"status" in fm` with value None (author wrote
+            # `status:` with nothing after it) is a bad VALUE, not an omitted key -- `.get()` alone
+            # would conflate the two.
+            status_present = "status" in fm
+            status = fm.get("status")
+            if status_present and (not isinstance(status, str) or status not in ("current", "superseded")):
+                problems.append(f"FRONTMATTER status INVALID: {path} status={status!r} must be "
+                                f"'current' or 'superseded'")
+            is_superseded = status_present and status == "superseded"
+            superseded_by_present = "superseded_by" in fm
+            superseded_by = fm.get("superseded_by")
+            has_target = isinstance(superseded_by, str) and superseded_by.strip() != ""
+            if superseded_by_present and not has_target:
+                problems.append(f"FRONTMATTER INCONSISTENT: {path} superseded_by is present but not a "
+                                f"non-empty string (got {superseded_by!r})")
+            if is_superseded and not has_target:
+                problems.append(f"FRONTMATTER INCONSISTENT: {path} status: superseded needs a non-empty superseded_by")
+            if not is_superseded and superseded_by_present:
+                problems.append(f"FRONTMATTER INCONSISTENT: {path} has superseded_by but status is not "
+                                f"'superseded' (status={status!r})")
+            # Checked against the STAGED index (what this commit actually contains), not the working
+            # tree -- an untracked file on disk must not satisfy this. Known residual gap (not fixed
+            # here): this only re-checks superseded_by on agent/skill files THIS commit touches, same as
+            # every other check in this block; an untouched file whose successor is deleted by a LATER,
+            # separate commit is not caught until something next edits that file. A full cross-reference
+            # scan of every agent/skill on every commit is a different, heavier check than "gate the
+            # diff" and was judged out of scope for this pass.
+            if has_target and not (staged_file_exists(f".claude/agents/{superseded_by}.md")
+                                    or staged_file_exists(f".claude/skills/{superseded_by}/SKILL.md")):
+                problems.append(f"FRONTMATTER superseded_by '{superseded_by}' in {path} does not name an "
+                                f"existing .claude/agents/<name>.md or .claude/skills/<name>/SKILL.md "
+                                f"in the staged tree")
 
     try:
         added = added_lines(git("diff", "--cached", "--text", "-U0", "--no-color"))
