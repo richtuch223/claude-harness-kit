@@ -5,10 +5,10 @@ description: "Program-level meta-audit that re-reads closures and ranks where th
 
 # frontier-audit — re-type the closures, count the kills, rank the near-misses, find the blind spots
 
-Restores a practice that, in the project this was lifted from, ran once, found real structure (the only
-document that ranked near-misses by the cost of clearing their blocker, and a negative-space census
-showing artifact count tracks data-acquisition cost, not opportunity), and then went unread and
-unrepeated for weeks because nothing reminded anyone to run it again.
+A periodic meta-audit of a research program's own closures. Without a cadence it tends to run once and then go
+unread: the near-miss ranking (by the cost of clearing each blocker) and the negative-space census (where the program
+has looked, and where it has not) are only useful if someone re-runs them as the program moves. A common finding to
+check for: effort tends to follow cheap data rather than opportunity.
 
 **Cadence:** every ~4 research fleets, or on a fixed calendar cadence if your project's scheduler
 supports it. If you have a session-brief hook, have it print an "AUDIT DUE" line when enough

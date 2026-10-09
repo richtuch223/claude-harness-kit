@@ -5,13 +5,12 @@ metadata:
   type: feedback
 ---
 
-**What happened:** a historical event population (companies that did X in some past year) was built by joining each
-event to a security through a CURRENT ticker/identifier table. Entities that were later delisted, renamed, acquired,
-or merged away do not appear in a current-only table, so they silently fell out as "unresolved" rather than being
-counted. On a re-check, the majority of the original population fell into that unresolved bucket; recovering the
-missing (now-dead) entities from a point-in-time or delisted-inclusive source changed a statistically significant
-PASS into a result on the other side of zero. The in-sample training population used the same current-only join and
-carried the identical, undetected bias.
+**How it happens (illustrative):** suppose a historical event population (companies that did X in some past year) is
+built by joining each event to a security through a CURRENT ticker/identifier table. Entities later delisted, renamed,
+acquired or merged away do not appear in a current-only table, so they silently fall out as "unresolved" instead of
+being counted. If a large share of the population lands in that bucket, recovering the missing (now-dead) entities from
+a point-in-time or delisted-inclusive source can move a significant result to the other side of zero, and any
+in-sample population built with the same join carries the identical bias.
 
 **Why:** "current identifier list" and "still existed" are the SAME condition for anything measured after the fact,
 so filtering on identifier resolvability is really filtering on survival — and survival is correlated with the

@@ -5,12 +5,12 @@ metadata:
   type: feedback
 ---
 
-**What happened:** several independent "free, zero-cost" historical tests in niche markets all came back blocked or
-inconclusive on DATA, not on the underlying idea. A historical-price archive that used to be free got pulled behind a
-paywall citing rising server costs; a web archive had essentially no snapshots of the pages that would have
-substituted for it; deep multi-year history for a particular instrument class existed only from paid vendors; and,
-separately, a builder under time pressure quietly reused an old, unrelated data pull instead of reporting that the
-real population had zero matching history, which would have silently produced a result over the wrong population.
+**How it shows up (illustrative):** a "free, zero-cost" historical test in a niche market comes back blocked or
+inconclusive on DATA, not on the idea. Typical causes: a once-free archive moves behind a paywall; a public API serves
+only a trailing window (e.g. the last 12 months) however the request is phrased; a web archive has no snapshots of the
+pages you need; deep history exists only from paid vendors. A related failure: an agent under time pressure substitutes
+an old, unrelated data pull instead of reporting that the real population has no matching history, which silently
+produces a result over the wrong population.
 
 **Why:** "free" describes the marginal cost of a LIVE/forward pull, not the existence of a historical archive; niche
 and illiquid markets are exactly the ones where a data vendor has no commercial reason to keep serving deep history
