@@ -159,7 +159,7 @@ if __name__ == "__main__":
         p.add_argument(f"--{c}", required=True)
     for c in ["agents", "claude-tokens", "reviewer-calls", "accepted"]:
         p.add_argument(f"--{c}", type=int, required=True)
-    p.add_argument("--vein", required=True, help="line of work, e.g. tickets, predmarket, harness; ? if mixed")
+    p.add_argument("--vein", required=True, help="line of work, e.g. pricing, data-collection, harness; ? if mixed")
     p.add_argument("--research-accepted", type=int, default=None,
                    help="accepted RESEARCH findings only (exclude harness fixes); omit if unknown")
     p.add_argument("--banked")
