@@ -89,6 +89,8 @@ The free route: a Gemini AI Studio key, `-p gemini --reasoning low`. For stronge
 subscription through the Codex CLI (`-p codex-cli -m terra,luna`: two seats, OAuth, no API key; seat
 names are aliases in `CODEX_TIERS`, confirm them with `/model` in `codex`), or OpenRouter
 (pay-as-you-go; the source repo's routine gates cost fractions of a cent to a few cents each).
+Setting up the Codex route end to end (OAuth, the two seats, hardening, pinning model and effort) is
+`05_CODEX_ON_TOP.md`.
 
 ## Safety properties of `tools/verify.py`
 

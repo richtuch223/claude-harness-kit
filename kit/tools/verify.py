@@ -460,7 +460,7 @@ def main() -> int:
     ap.add_argument("-p", "--provider", default=os.environ.get("VERIFY_PROVIDER", "codex-cli"), choices=PROVIDERS,
                     help="default codex-cli: the live seat (ChatGPT OAuth). Override with VERIFY_PROVIDER.")
     ap.add_argument("-m", "--model", help="model id, or tier alias soul|terra|luna (OpenRouter ids)")
-    ap.add_argument("--reasoning", default="high", choices=["none", "low", "medium", "high"],
+    ap.add_argument("--reasoning", default="high", choices=["none", "low", "medium", "high", "xhigh"],
                     help="reasoning effort (`low` is better for flash-tier code review: high truncates the answer)")
     ap.add_argument("--temperature", type=float, default=0.1)
     ap.add_argument("--max-tokens", type=int, default=16000)

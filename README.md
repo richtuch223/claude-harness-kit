@@ -19,6 +19,7 @@ are included but never run unless you call them, so you can read them and decide
 | 4 | **`grill`** | Ambiguity is cheapest to kill in conversation. Numbered questions, a recommended answer for each, two or three rounds, then build. | `03_SKILLS.md` §2 |
 | 6 | **A CLAUDE.md that is a map, not a knowledge base** | The one file loaded every session. Ours went stale once and misdirected sessions for six weeks; the fix was pointers only. The anatomy, section by section. | `04_WRITING_CLAUDE_MD.md` |
 | 5 | **Freeze → verify → bank** | Write down what "success" means before running; bank the result in the same turn you decide it. Prevents post-hoc tuning and lost verdicts. | `03_SKILLS.md` §3–5 |
+| 7 | **Codex on top of Claude** | A GPT-family seat on a ChatGPT subscription through OAuth: no API key, a separate quota, two jobs (review gate, web scout), and the hardening a read-only sandbox does not give you. | `05_CODEX_ON_TOP.md` |
 
 Then `LESSONS.md` has the measured findings behind all of it, and `lessons/` has the incidents they came from.
 
@@ -60,8 +61,10 @@ Then, in your repo:
    `pip install pyyaml` then `git config core.hooksPath ops/githooks`
 4. **Install the hookify plugin** (the guards are inert without it). In Claude Code, launched from the repo root:
    `/plugin install hookify@claude-plugins-official`, then restart.
-5. **Pick a review route** for `tools/verify.py` (one is enough) and set `VERIFY_PROVIDER` in `.env`.
-   Free option: a Gemini AI Studio key (`-p gemini`). See `02_VERIFICATION_LOOP.md`.
+5. **Pick a review route** for `tools/verify.py` (one is enough): pass `-p`, or export `VERIFY_PROVIDER`
+   (the tools read the environment; `.env` is only a place to keep values your shell exports).
+   Free option: a Gemini AI Studio key (`-p gemini`). See `02_VERIFICATION_LOOP.md`. A ChatGPT subscription
+   through the Codex CLI (OAuth, no key) is the default route: `05_CODEX_ON_TOP.md`.
 6. **Launch Claude Code from the git root.** From a parent folder none of `.claude/` loads. The source
    repo lost a week to this.
 
@@ -83,6 +86,10 @@ In your real repo, clean up each probe by its exact name before the next
 | verify.py selftest | `python tools/verify.py --selftest` | `0 failure(s)` |
 | review payload | `python tools/verify.py review --files tools/verify_sealed.txt --focus "smoke" --dry-run` | payload printed, nothing sent |
 | codex route hardened | `python tools/verify.py review --files tools/verify_sealed.txt -p codex-cli --dry-run` | the printed command carries `--strict-config`, the three `=false` tool switches and `--ephemeral` |
+| fetch guard selftest | `python tools/fetch_guard.py --selftest` | `SELFTEST OK (16/16)` |
+| prestate selftest | `python tools/prestate.py --selftest` | passes, including the no-op amend refusal |
+| memory lint selftest | `python tools/memory_lint.py --selftest` | passes on a throwaway fixture |
+| codex scout isolated (live) | `python tools/codex_scout.py --canary --model <id>` | a line starting `CANARY PASS:` (one probe's outcome, not a proof) |
 | **review route, live** | `python tools/verify.py review --files tools/verify_sealed.txt --focus "smoke test: reply NO FINDINGS if nothing is wrong" -o review_smoke.md` | a report file with a reply from the provider (proves credentials, model id, and response handling) |
 
 ## What's in the zip
@@ -96,6 +103,8 @@ README.md                  this file
 LESSONS.md                 the measured findings and session habits, with evidence
 CHANGES_2026-09-25.md      what changed since the 2026-09-23 build
 CHANGES_2026-10-09.md      what changed since the 2026-09-25 build (fleet skills, 6 measurement tools, frontmatter gate)
+05_CODEX_ON_TOP.md         headline 7: a Codex seat beside Claude on a ChatGPT subscription (OAuth), hardened
+CHANGES_2026-10-14.md      what changed since the 2026-10-09 build (Codex guide + scout, fetch guard, no-op amend guard, memory lint)
 install.py                 copies kit/ into a repo without overwriting
 kit/                       THE DROP-IN — mirrors your repo root
   CLAUDE.md                template, 74 lines (~1.8k tokens), <!-- FILL --> markers
@@ -111,12 +120,16 @@ kit/                       THE DROP-IN — mirrors your repo root
   tools/verify.py          the cross-family review gate (+ verify_sealed.txt)
   tools/prestate.py, instrument_check.py, overfit_stats.py, decay_monitor.py, residual_mine.py, fleet_ledger.py
                            measurement/discipline tools (level 3+, opt-in) — see CHANGES_2026-10-09.md
+  tools/fetch_guard.py     validate an API reply before it is parsed, cached or written as data
+  tools/codex_scout.py     web-research scouts on the Codex seat (web ON, shell/exec OFF, canary) — see 05_CODEX_ON_TOP.md
+  tools/memory_lint.py     read-only linter for the per-project memory dir (frontmatter, index pointers, [[links]])
   docs/                    STATE, DECISIONS, PROJECT_CONTEXT, HARNESS, METHODS (failure laws + rigor rubric)
   facts/registry.yaml      one home per quotable number
   ops/fleet_ledger.tsv     empty cost-per-accepted-finding ledger (header row only)
 optional/                  context-efficiency hooks to add when their trigger fires
   session-brief/           SessionStart hook: inject a derived ~1k-token "where are we" brief
   figure-hooks/            number registry tripwire (Stop) + just-in-time figure injection (UserPromptSubmit)
+  checkpoint-writer/       PreCompact hook: a checkpoint of what compaction would drop, with headed blanks
 lessons/                   incident memories (one lesson per file) + the memory-index format
 ```
 

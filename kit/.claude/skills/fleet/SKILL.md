@@ -33,6 +33,10 @@ stops all progress, which is exactly why it is the review seat and not a builder
 - `high`: default for the strong seat and the main loop.
 - `xhigh`: design-gate / go-no-go seats and verdict-bearing refutations only.
 - `max`: never by default. Use it only when a lower setting has demonstrably failed the task.
+- CLI seats (Codex, Gemini CLI): always pass the effort explicitly (`tools/verify.py --reasoning`,
+  `tools/codex_scout.py --effort`). Never rely on `~/.codex/config.toml`: its default is `medium` and it is applied
+  silently (the source program ran every scout at medium for two weeks). Both tools print the effort in the report
+  header; read it before the findings. See `05_CODEX_ON_TOP.md`.
 
 ## 3. The contract block: paste VERBATIM as the FIRST text of every agent prompt
 
@@ -50,7 +54,8 @@ FLEET CONTRACT (identical for every agent in this run):
 - Pre-statement: any rule that will be judged against outcomes goes into the script docstring and
   <scratch>/prestate_log.txt (UTC + sha256) BEFORE any outcome is read. Pre-read amendments only, each with a reason.
 - Traps: silent page caps, newest-first ordering, exact-duplicate rows that are real, mixed populations, medians where
-  means are summed, throughput quoted as profit. Write scripts with the editor tools, never a shell heredoc.
+  means are summed, throughput quoted as profit, an API error body parsed or cached as data (pass every fetch through
+  tools/fetch_guard.py check_json first). Write scripts with the editor tools, never a shell heredoc.
 - Never edit docs/STATE.md, docs/DECISIONS.md, facts/registry.yaml, CLAUDE.md, frozen configs or sealed data. Never
   commit, place orders, or open accounts. Report raw results; the main loop writes verdicts.
 - Report the model and effort you ran on, and what you did NOT check.

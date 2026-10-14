@@ -1,0 +1,16 @@
+{
+  "_comment": "Merge into .claude/settings.json. Adjust the script path to where you copied checkpoint_writer.py. If your build rejects PreCompact, use the same entry under SessionStart.",
+  "hooks": {
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PYTHONUTF8=1 python \"$CLAUDE_PROJECT_DIR\"/src/hooks/checkpoint_writer.py",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

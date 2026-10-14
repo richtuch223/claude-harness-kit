@@ -441,7 +441,7 @@ def freeze(rule_file: Path, log: Path, new_root: bool = False, repo_root: Path |
     return {"sha": sha, "frozen_path": str(frozen_path), "warned": warned}
 
 
-def amend(new_rule_file: Path, log: Path, reason: str) -> dict:
+def amend(new_rule_file: Path, log: Path, reason: str, allow_noop: bool = False) -> dict:
     """Amend LOG's active study's current rule to NEW_RULE_FILE. Returns {sha, prev, root,
     diff_path}."""
     new_rule_file = Path(new_rule_file)
@@ -475,6 +475,13 @@ def amend(new_rule_file: Path, log: Path, reason: str) -> dict:
     root_text = read_frozen(log, root_sha)
     normalized = normalize_file(new_rule_file)
     new_sha = sha256_hex(normalized)
+    # No-op guard (2026-10-14): two studies each logged an AMEND whose content equalled the current head,
+    # because a text replace had failed silently and `amend` ran anyway. A record that changes nothing is
+    # noise in the audit trail and hides the failed edit (lessons/amend-after-a-failed-edit-records-a-no-op).
+    if new_sha == prev_sha and not allow_noop:
+        die(f"refusing to amend -- the new rule text is identical to the current head ({prev_sha[:12]}). "
+            "The edit before this amend probably did not apply (failed text replace?). Chain the edit and "
+            "the amend in one command, or pass --allow-noop to record it anyway.")
     store_content_addressed(log, normalized, new_sha)
     diff_lines = list(difflib.unified_diff(
         root_text.splitlines(keepends=True), normalized.splitlines(keepends=True),
@@ -792,7 +799,7 @@ def cmd_freeze(a) -> int:
 
 
 def cmd_amend(a) -> int:
-    info = amend(Path(a.new_rule_file), Path(a.log), a.reason)
+    info = amend(Path(a.new_rule_file), Path(a.log), a.reason, allow_noop=getattr(a, "allow_noop", False))
     print(f"prestate: AMEND sha256={info['sha']} (prev={info['prev']}, root={info['root']}) "
           f"diff={info['diff_path']}")
     return 0
@@ -929,6 +936,24 @@ def selftest() -> None:
         assert verify_text(rule_v1.read_text(encoding="utf-8"), log) == "STALE", "old rule should be STALE after amendment"
         assert verify_text(rule_v2.read_text(encoding="utf-8"), log) == "OK", "amended rule should verify OK"
         assert current_sha(log) == info2["sha"]
+
+        # 4c. no-op amend (same text as the current head) refused by default; allowed with allow_noop.
+        #     Runs on its OWN log so the main chain used by the later checks is untouched.
+        noop_log = td / "noop_log.txt"
+        freeze(rule_v1, noop_log)
+        info_n1 = amend(rule_v2, noop_log, "first real change on the no-op probe log")
+        try:
+            amend(rule_v2, noop_log, "a second amend with unchanged text that must be refused")
+            raised = False
+        except SystemExit as e:
+            raised = True
+            assert e.code == 2, f"no-op amend should exit 2, got {e.code}"
+        assert raised, "an amend whose text equals the current head must be refused by default"
+        assert current_sha(noop_log) == info_n1["sha"], "a refused no-op amend must not move the head"
+        assert len(active_chain(parse_log(noop_log))) == 2, "a refused no-op amend must not append a record"
+        info_n2 = amend(rule_v2, noop_log, "explicit no-op amendment recorded on purpose", allow_noop=True)
+        assert info_n2["sha"] == info_n1["sha"] and len(active_chain(parse_log(noop_log))) == 3, "allow_noop must record it"
+        assert not check_integrity(noop_log) and not check_chain_links(noop_log), "an allowed no-op must leave a valid chain"
 
         # 5. show prints a diff containing the changed line
         import io
@@ -1472,6 +1497,8 @@ def main() -> int:
     p_amend.add_argument("new_rule_file")
     p_amend.add_argument("--log", required=True)
     p_amend.add_argument("--reason", required=True, help=">= 15 characters; explain WHY")
+    p_amend.add_argument("--allow-noop", action="store_true",
+                         help="record an AMEND whose text equals the current head (refused by default)")
 
     p_show = sub.add_parser("show", help="print ROOT, CURRENT, amendments, and the ROOT->CURRENT diff")
     p_show.add_argument("--log", required=True)

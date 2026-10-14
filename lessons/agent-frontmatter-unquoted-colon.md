@@ -1,6 +1,6 @@
 ---
 name: agent-frontmatter-unquoted-colon
-description: An agent/skill .md whose frontmatter description contains an unquoted ": " is invalid YAML, and the harness silently drops the whole file — the agent or skill simply does not exist, with no error anywhere. Validate every frontmatter block with a real YAML parser after any edit, and quote any description containing ": ".
+description: 'An agent/skill .md whose frontmatter description contains an unquoted ": " is invalid YAML, and the harness silently drops the whole file — the agent or skill simply does not exist, with no error anywhere. Validate every frontmatter block with a real YAML parser after any edit, and quote any description containing ": ". (This very file shipped with that defect in the 2026-10-09 build; a YAML check over lessons/ caught it on 2026-10-14.)'
 metadata:
   type: feedback
 ---

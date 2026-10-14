@@ -35,3 +35,6 @@ The files here are the incidents that cost the most, each generalizable:
 | `current-identifier-survivorship-trap.md` | never resolve a historical population through a CURRENT identifier list — it drops the dead |
 | `free-data-apis-wall-history.md` | free APIs usually serve live data, not deep history; check lookback before designing a historical test |
 | `in-sample-mean-normalization-hides-the-contrast.md` | a statistic measured against its own in-sample mean carries all of that mean's shrinkage; pre-state the real contrast |
+| `api-error-body-cached-as-data.md` | a parseable JSON reply is not valid data; validate shape and keys before parse/cache (`tools/fetch_guard.py`) |
+| `amend-after-a-failed-edit-records-a-no-op.md` | chain the edit and the pre-statement amend; `prestate.py amend` now refuses a no-op |
+| `parallel-numeric-work-can-hard-reboot-the-box.md` | the box hard-rebooted under all-core numeric work beside six agent/CLI processes (display-driver starvation is the unproven hypothesis); cap threads, two heavy jobs at once |
